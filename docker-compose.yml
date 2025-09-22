@@ -1,0 +1,35 @@
+version: '3.8'
+services:
+  zookeeper:
+    image: docker.io/bitnami/zookeeper:3.8
+    container_name: docker-zookeeper
+    ports:
+      - "2181:2181"
+    volumes:
+      - "./volumes/zookeeper_data:/bitnami"
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+      
+  kafka:
+    image: docker.io/bitnami/kafka:3.1
+    container_name: docker-kafka
+    ports:
+      - "9092:9092"
+    volumes:
+      - "./volumes/kafka_data:/bitnami"
+    environment:
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,PLAINTEXT_HOST://:29092
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://localhost:9092,PLAINTEXT_HOST://localhost:29092
+    depends_on:
+      - zookeeper
+    deploy:
+      resources:
+        limits:
+          memory: 1G
