@@ -1,5 +1,6 @@
 package com.kafka.producer.controller;
 
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.admin.KafkaAdminClient;
@@ -21,11 +22,38 @@ public class KafkaPublisher {
 
     private final KafkaTemplate<String, String> kafkaTemplate;
 
-    @PostMapping
-    public void publishData(@RequestParam String data) {
+    //    @PostConstruct
+    public void publishData() {
         // code logic
-        CompletableFuture<SendResult<String, String>> orderCreation = kafkaTemplate.send("order_creation", data);
+        String data = "Hello world 2nd data";
+        CompletableFuture<SendResult<String, String>> orderCreation = kafkaTemplate.send("spring_topic", data);
         orderCreation.whenCompleteAsync((result, ex) -> {
+            if (ex == null) {
+                log.info("Data Published SUccessfully to kafka : {}", result.getProducerRecord().value());
+            } else {
+                log.error("Error while publishing data : ", ex);
+            }
+        });
+    }
+
+    //    @PostConstruct
+    public void publishToSPecificPartitionByPartitionNumber() {
+        String data = "Hello world 2nd data";
+
+        kafkaTemplate.send("spring_topic", 0, "", "Partition 0 2nd Record").whenCompleteAsync((result, ex) -> {
+            if (ex == null) {
+                log.info("Data Published SUccessfully to kafka : {}", result.getProducerRecord().value());
+            } else {
+                log.error("Error while publishing data : ", ex);
+            }
+        });
+    }
+
+    @PostConstruct
+    public void publishToSPecificPartitionByPartitionKey() {
+        String data = "Hello world partition key 2nd data";
+
+        kafkaTemplate.send("spring_topic", "1234", data).whenCompleteAsync((result, ex) -> {
             if (ex == null) {
                 log.info("Data Published SUccessfully to kafka : {}", result.getProducerRecord().value());
             } else {
